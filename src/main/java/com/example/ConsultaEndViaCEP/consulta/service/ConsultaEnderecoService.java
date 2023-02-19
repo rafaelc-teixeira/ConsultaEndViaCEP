@@ -31,65 +31,61 @@ public class ConsultaEnderecoService {
         return true;
     }
 
-    public ResponseEntity<String> getResponseFromViacep(String cep, String VIACEP_URL) throws JsonProcessingException {
+    public ResponseEntity<String> getResponseFromViacep(String cep, String viacepUrl) throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
-        String url = String.format(VIACEP_URL, cep);
+        String url = String.format(viacepUrl, cep);
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
         if (response.getStatusCode().is2xxSuccessful()) {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode rootNode = objectMapper.readTree(response.getBody());
-                if (rootNode.has("erro")) {
-                    return null;
-                }
-            } catch (IOException e) {
-                // handle the exception
+            if (hasError(response.getBody())) {
+                return null;
             }
             ObjectMapper objectMapper = new ObjectMapper();
-            ViaCepResponse viaCepResponse = objectMapper.readValue(response.getBody(), ViaCepResponse.class);
-            ConsultaEnderecoResponse endereco = new ConsultaEnderecoResponse(
-                    viaCepResponse.getCep(),
-                    viaCepResponse.getLogradouro(),
-                    viaCepResponse.getComplemento(),
-                    viaCepResponse.getBairro(),
-                    viaCepResponse.getLocalidade(),
-                    viaCepResponse.getUf(),
-                    getFreteValue(viaCepResponse.getUf()));
+            ViaCepResponse viaCepResponse = mapResponseToObject(response.getBody());
+            assert viaCepResponse != null;
+            ConsultaEnderecoResponse endereco = createEnderecoFromCepResponse(viaCepResponse);
 
             return ResponseEntity.ok(objectMapper.writeValueAsString(endereco));
         }
+
         return null;
     }
 
+    public boolean hasError (String responseBody) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            if (rootNode.has("erro")) {
+                return true;
+            }
+        } catch (IOException e) {
+            // handle the exception
+        }
+        return false;
+    }
 
-//    public ResponseEntity<ConsultaEnderecoResponse> getEnderecoFromViacep(String cep, String VIACEP_URL) {
-//        RestTemplate restTemplate = new RestTemplate();
-//        String url = String.format(VIACEP_URL, cep);
-//        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-//
-//        if (!response.getStatusCode().is2xxSuccessful()) {
-//            return null;
-//        }
-//
-//        try {
-//            ConsultaEnderecoResponse endereco = convertJsonToConsultaEndereco(response.getBody());
-//            if (endereco.hasErro()) {
-//                return null;
-//            }
-//            double frete = getFreteValue(endereco.getUf());
-//            endereco.setFrete(frete);
-//            return ResponseEntity.ok(endereco);
-//        } catch (JsonProcessingException e) {
-//            // handle the exception
-//        }
-//
-//        return null;
-//    }
-//
-//    private ConsultaEnderecoResponse convertJsonToConsultaEndereco(String json) throws JsonProcessingException {
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        return objectMapper.readValue(json, ConsultaEnderecoResponse.class);
-//    }
+    private ViaCepResponse mapResponseToObject(String responseBody) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(responseBody, ViaCepResponse.class);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private ConsultaEnderecoResponse createEnderecoFromCepResponse(ViaCepResponse viaCepResponse) {
+        double frete = getFreteValue(viaCepResponse.getUf());
+        return new ConsultaEnderecoResponse(
+                viaCepResponse.getCep(),
+                viaCepResponse.getLogradouro(),
+                viaCepResponse.getComplemento(),
+                viaCepResponse.getBairro(),
+                viaCepResponse.getLocalidade(),
+                viaCepResponse.getUf(),
+                frete
+        );
+    }
+
 
     private double getFreteValue(String uf) {
         switch (uf) {
