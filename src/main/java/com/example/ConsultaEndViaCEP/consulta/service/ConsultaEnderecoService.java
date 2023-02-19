@@ -1,6 +1,14 @@
 package com.example.ConsultaEndViaCEP.consulta.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
 
 @Service
 public class ConsultaEnderecoService {
@@ -20,4 +28,25 @@ public class ConsultaEnderecoService {
 
         return true;
     }
+
+    public ResponseEntity<String> getResponseFromViacep(String cep, String VIACEP_URL) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = String.format(VIACEP_URL, cep);
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode rootNode = objectMapper.readTree(response.getBody());
+                if (rootNode.has("erro")) {
+                    return null;
+                }
+            } catch (IOException e) {
+                // handle the exception
+            }
+            return ResponseEntity.ok(response.getBody());
+        }
+        return null;
+    }
+
+
 }
