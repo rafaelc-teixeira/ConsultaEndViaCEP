@@ -46,4 +46,35 @@ public class ConsultaEnderecoResponse {
     public double getFrete() {
         return frete;
     }
+
+    public void setCep(String cep) {
+        this.cep = cep;
+    }
+
+    public void setRua(String rua) {
+        this.rua = rua;
+    }
+
+    public void setComplemento(String complemento) {
+        this.complemento = complemento;
+    }
+
+    public void setBairro(String bairro) {
+        this.bairro = bairro;
+    }
+
+    public void setCidade(String cidade) {
+        this.cidade = cidade;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public void setFrete(double frete) {
+        this.frete = frete;
+    }
+
+
+
 }
