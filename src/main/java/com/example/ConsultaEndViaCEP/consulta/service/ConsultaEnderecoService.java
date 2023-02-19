@@ -3,7 +3,6 @@ package com.example.ConsultaEndViaCEP.consulta.service;
 import com.example.ConsultaEndViaCEP.consulta.model.ConsultaEnderecoResponse;
 import com.example.ConsultaEndViaCEP.consulta.model.ViaCepResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
