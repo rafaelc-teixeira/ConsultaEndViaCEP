@@ -5,7 +5,7 @@ ConsultaEndViaCEP is a simple Java application built with Spring Boot that allow
 ## Prerequisites
 Before you can run this application, you'll need to have the following installed on your machine:
 
-* Java 11 or higher
+* Java 17 or higher
 * Docker
 
 ## Running the application
