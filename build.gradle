@@ -19,8 +19,31 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.7.1'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.cucumber:cucumber-java:7.11.1'
+	testImplementation 'io.cucumber:cucumber-junit:7.11.1'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+configurations {
+	cucumberRuntime {
+		extendsFrom testImplementation
+	}
+}
+
+task cucumberCli() {
+	dependsOn assemble, testClasses
+	doLast {
+		javaexec {
+			main = "io.cucumber.core.cli.Main"
+			classpath = configurations.cucumberRuntime + sourceSets.main.output + sourceSets.test.output
+			args = [
+					'--plugin', 'pretty',
+					'--plugin', 'html:target/cucumber-report.html',
+					'--glue', 'com.example.ConsultaEndViaCep',
+					'src/test/resources']
+		}
+	}
 }
